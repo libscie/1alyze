@@ -3,69 +3,60 @@ import Link from "next/link"
 import Layout from "src/core/layouts/Layout"
 import { useCurrentUser } from "src/users/hooks/useCurrentUser"
 import logout from "src/auth/mutations/logout"
-import { useMutation } from "@blitzjs/rpc"
+import { useMutation, useQuery } from "@blitzjs/rpc"
 import { Routes, BlitzPage } from "@blitzjs/next"
 import styles from "src/styles/Home.module.css"
 import Spreadsheet, { createEmptyMatrix } from "react-spreadsheet"
 import next from "next/types"
-
-const columns = [
-  { key: "id", name: "ID" },
-  { key: "title", name: "Title" },
-]
-
-const rows = [
-  { id: 0, title: "Example" },
-  { id: 1, title: "Demo" },
-]
-
-/*
- * This file is just for a pleasant getting started page for your new app.
- * You can delete everything in here and start from scratch if you like.
- */
+import axios from "axios"
+import { tsv2json } from "tsv-json"
+import getSessionToken from "../auth/queries/getSessionToken"
 
 function getBase64(file) {
-  var reader = new FileReader()
-  reader.readAsDataURL(file)
-  reader.onload = function () {
-    console.log(reader.result)
-  }
-  reader.onerror = function (error) {
-    console.log("Error: ", error)
-  }
+  return new Promise((resolve) => {
+    var reader = new FileReader()
+    reader.onloadend = function () {
+      resolve(reader.result?.toString())
+    }
+    reader.readAsDataURL(file)
+  })
 }
 
-const UserInfo = () => {
+const UserInfo = ({ setState }) => {
   const currentUser = useCurrentUser()
   const [logoutMutation] = useMutation(logout)
+  const [sessionToken] = useQuery(getSessionToken, null)
 
-  if (currentUser) {
-    return (
-      <>
-        <button
-          className={styles.button}
-          onClick={async () => {
-            await logoutMutation()
-          }}
-        >
-          Logout
-        </button>
-        <div>
-          User id: <code>{currentUser.id}</code>
-          <br />
-          User role: <code>{currentUser.role}</code>
-        </div>
-      </>
-    )
-  } else {
-    return (
-      <>
-        <Link href={Routes.SignupPage()} className={styles.button}>
-          <strong>Sign Up</strong>
-        </Link>
-        <Link href={Routes.LoginPage()} className={styles.loginButton}>
-          <strong>Login</strong>
-        </Link>
+  return (
+    <>
+      {currentUser ? (
+        <>
+          <button
+            className={styles.button}
+            onClick={async () => {
+              await logoutMutation()
+            }}
+          >
+            Logout
+          </button>
+          <div>
+            User id: <code>{currentUser.id}</code>
+            <br />
+            User role: <code>{currentUser.role}</code>
+          </div>
+        </>
+      ) : (
+        <>
+          <Link href={Routes.SignupPage()} className={styles.button}>
+            <strong>Sign Up</strong>
+          </Link>
+          <Link href={Routes.LoginPage()} className={styles.loginButton}>
+            <strong>Login</strong>
+          </Link>
+        </>
+      )}
+
+      <div className="max-w-xl">
         <label
           htmlFor="file-upload"
           className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -76,21 +67,49 @@ const UserInfo = () => {
             name="file-upload"
             type="file"
             className="sr-only"
-            onChange={(file) => {
+            // onInput={async (event) => {
+            //   const base = await getBase64(event.target["files"][0])
+
+            //   console.log(base)
+            // }}
+            onChange={async (file) => {
               if (file.target.files![0]!.size > 1048576 * 2) {
                 alert("File is too big!")
                 file.target.value = ""
               } else {
-                console.log(file.target.value)
-                getBase64(file.target.files![0])
+                const base = await getBase64(file.target.files![0])
+                const res = await axios.post(
+                  "https://api.mathpix.com/v3/text",
+                  {
+                    src: base,
+                    formats: ["data"],
+                    data_options: {
+                      include_tsv: true,
+                    },
+                    enable_tables_fallback: true,
+                  },
+                  {
+                    headers: {
+                      app_token: sessionToken.app_token,
+                    },
+                  }
+                )
+                const tmp = tsv2json(res.data.data[0]["value"])
+                const final = tmp.map((y) => {
+                  return y.map((z) => {
+                    return { value: z }
+                  })
+                })
+                setState(final)
+                console.log(res)
               }
             }}
             accept="image/png, image/jpeg"
           />
         </label>
-      </>
-    )
-  }
+      </div>
+    </>
+  )
 }
 
 // x.map((y) => {return y.map(z => { return {value: z}})})
@@ -207,12 +226,33 @@ const testObject = [
   ],
 ]
 
+const test2 = [
+  [
+    "Year",
+    "CO_(2) concentration \n(ppm)",
+    " Mean Annual \n Temperature (^(@)C)",
+    " Mean Annual \n Precipitation (mm)",
+  ],
+  ["2012", "366", "10", "500"],
+  ["2013", "378", "11", "800"],
+  ["2014", "382", "12", "940"],
+  ["2015", "390", "13", "260"],
+  ["2016", "405", "14", "710"],
+  ["2017", "410", "15", "1430"],
+]
+
 const Home: BlitzPage = () => {
-  // const [spreadsheetData, setSpreadsheetData] = useState(createEmptyMatrix(4, 5) as any)
-  const [spreadsheetData, setSpreadsheetData] = useState(testObject)
+  const [spreadsheetData, setSpreadsheetData] = useState(
+    test2.map((y) => {
+      return y.map((z) => {
+        return { value: z }
+      })
+    })
+  )
   const [selected, setSelected] = useState([])
   const spreadsheetRef = useRef(null)
-  const columns = 9
+  const [columns, setColumns] = useState(spreadsheetData[0]!.length)
+  // const columns = spreadsheetData[0]!.length
   useEffect(() => {
     if (columns) {
       const nextSpreadsheetData = spreadsheetData.map((row) => {
@@ -230,24 +270,12 @@ const Home: BlitzPage = () => {
       <div className={styles.globe} />
 
       <div className={styles.container}>
-        <div className={styles.toastContainer}>
-          <p>
-            <strong>Congrats!</strong> Your app is ready, including user sign-up and log-in.
-          </p>
-        </div>
-
         <main className={styles.main}>
           <div className={styles.wrapper}>
             <div className={styles.header}>
-              <div className={styles.logo}></div>
-
-              <h1>Your database & authentication is ready. Try it by signing up.</h1>
-
-              {/* Auth */}
-
               <div className={styles.buttonContainer}>
                 <Suspense fallback="Loading...">
-                  <UserInfo />
+                  <UserInfo setState={setSpreadsheetData} />
                 </Suspense>
               </div>
               <div ref={spreadsheetRef} className={styles.spreadsheetContainer}>
@@ -269,113 +297,16 @@ const Home: BlitzPage = () => {
                 />
               </div>
               {JSON.stringify(selected)}
-            </div>
-
-            <div className={styles.body}>
-              {/* Instructions */}
-              <div className={styles.instructions}>
-                <p>
-                  <strong>Add a new model by running the following in your terminal:</strong>
-                </p>
-
-                <div>
-                  <div className={styles.code}>
-                    <span>1</span>
-                    <pre>
-                      <code>blitz generate all project</code>
-                    </pre>
-                  </div>
-
-                  <div className={styles.code}>
-                    <span>2</span>
-                    <pre>
-                      <code>Ctrl + c</code>
-                    </pre>
-                  </div>
-
-                  <div className={styles.code}>
-                    <span>3</span>
-                    <pre>
-                      <code>blitz dev</code>
-                    </pre>
-                  </div>
-
-                  <div className={styles.code}>
-                    <span>4</span>
-                    <pre>
-                      <code>
-                        Go to{" "}
-                        <Link href="/projects" className={styles.textLink}>
-                          /projects
-                        </Link>
-                      </code>
-                    </pre>
-                  </div>
-                </div>
-              </div>
-              {/* Links */}
-              <div className={styles.linkGrid}>
-                <a
-                  href="https://blitzjs.com/docs/getting-started?utm_source=blitz-new&utm_medium=app-template&utm_campaign=blitz-new"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.card}
-                >
-                  Blitz Docs
-                  <span className={styles.arrowIcon} />
-                </a>
-                <a
-                  href="https://nextjs.org/docs/getting-started"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.card}
-                >
-                  Next.js Docs
-                  <span className={styles.arrowIcon} />
-                </a>
-                <a
-                  href="https://github.com/blitz-js/blitz"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.card}
-                >
-                  Github Repo
-                  <span className={styles.arrowIcon} />
-                </a>
-                <a
-                  href="https://twitter.com/blitz_js"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.card}
-                >
-                  Blitz Twitter
-                  <span className={styles.arrowIcon} />
-                </a>
-                <a
-                  href="https://discord.blitzjs.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.card}
-                >
-                  Discord Community
-                  <span className={styles.arrowIcon} />
-                </a>
-              </div>
+              <button
+                onClick={() => {
+                  setSpreadsheetData(testObject)
+                }}
+              >
+                Switch to test
+              </button>
             </div>
           </div>
         </main>
-
-        <footer className={styles.footer}>
-          <span>Powered by</span>
-          <a
-            href="https://blitzjs.com?utm_source=blitz-new&utm_medium=app-template&utm_campaign=blitz-new"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.textLink}
-          >
-            Blitz.js
-          </a>
-        </footer>
       </div>
     </Layout>
   )
