@@ -6,8 +6,7 @@ import logout from "src/auth/mutations/logout"
 import { useMutation, useQuery } from "@blitzjs/rpc"
 import { Routes, BlitzPage } from "@blitzjs/next"
 import styles from "src/styles/Home.module.css"
-import Spreadsheet, { createEmptyMatrix } from "react-spreadsheet"
-import next from "next/types"
+import Spreadsheet from "react-spreadsheet"
 import axios from "axios"
 import { tsv2json } from "tsv-json"
 import getSessionToken from "../auth/queries/getSessionToken"
@@ -112,121 +111,7 @@ const UserInfo = ({ setState }) => {
   )
 }
 
-// x.map((y) => {return y.map(z => { return {value: z}})})
-// x being an array of arrays with values
-
 const testObject = [
-  [
-    { value: "ID" },
-    { value: "Task" },
-    { value: "Client" },
-    { value: "Area" },
-    { value: "Country" },
-    { value: "Contact" },
-    { value: "Assignee" },
-  ],
-  [
-    { value: "Total" },
-    { value: "1000 records" },
-    { value: "" },
-    { value: "" },
-    { value: "" },
-    { value: "" },
-    { value: "" },
-  ],
-  [
-    { value: "0" },
-    { value: "Task #1" },
-    { value: "Braun Group" },
-    { value: "Optimization" },
-    { value: "Cayman Islands" },
-    { value: "Felicita_Berge16@e..." },
-    { value: "Jorge Muller" },
-  ],
-  [
-    { value: "1" },
-    { value: "Task #2" },
-    { value: "Haag LLC" },
-    { value: "Accounts" },
-    { value: "Antigua and Barbuda" },
-    { value: "Geo.Mills86@exam..." },
-    { value: "Dr. Sandra Aberna.." },
-  ],
-  [
-    { value: "2" },
-    { value: "Task #3" },
-    { value: "Streich Inc" },
-    { value: "Solutions" },
-    { value: "Turkmenistan" },
-    { value: "Thomas24@exampl..." },
-    { value: "Christy Parker" },
-  ],
-  [
-    { value: "3" },
-    { value: "Task #4" },
-    { value: "Graham - Weissnat" },
-    { value: "Brand" },
-    { value: "Serbia" },
-    { value: "Golden27@example..." },
-    { value: "Gina Rosenbaum" },
-  ],
-  [
-    { value: "4" },
-    { value: "Task #5" },
-    { value: "Harris - Stracke" },
-    { value: "Group" },
-    { value: "Jordan" },
-    { value: "Rhoda_Ziemann8@..." },
-    { value: "Luz Wilkinson" },
-  ],
-  [
-    { value: "5" },
-    { value: "Task #6" },
-    { value: "Bosco and Sons" },
-    { value: "Operations" },
-    { value: "Denmark" },
-    { value: "Johnpaul_Huels@e..." },
-    { value: "Josh Mosciski" },
-  ],
-  [
-    { value: "6" },
-    { value: "Task #7" },
-    { value: "Schiller, Wehner and Moore" },
-    { value: "Interactions" },
-    { value: "Costa Rica" },
-    { value: "Louie68@example.org" },
-    { value: "Carla Collins" },
-  ],
-  [
-    { value: "7" },
-    { value: "Task #8" },
-    { value: "Denesik, Jerde and Hane" },
-    { value: "Data" },
-    { value: "Northern Mariana Islands" },
-    { value: "Ervin_Dibbert@exa..." },
-    { value: "Rachael Zemlak" },
-  ],
-  [
-    { value: "8" },
-    { value: "Task #9" },
-    { value: "Cormier, Feeney and D'Amore" },
-    { value: "Accounts" },
-    { value: "Cuba" },
-    { value: "Woodrow14@exam..." },
-    { value: "Lynda Larkin" },
-  ],
-  [
-    { value: "9" },
-    { value: "Task #10" },
-    { value: "Ebert, Schmeler and Stanton" },
-    { value: "Web" },
-    { value: "Liechtenstein" },
-    { value: "Erica24@example.org" },
-    { value: "Connie Kihn I" },
-  ],
-]
-
-const test2 = [
   [
     "Year",
     "CO_(2) concentration \n(ppm)",
@@ -243,7 +128,7 @@ const test2 = [
 
 const Home: BlitzPage = () => {
   const [spreadsheetData, setSpreadsheetData] = useState(
-    test2.map((y) => {
+    testObject.map((y) => {
       return y.map((z) => {
         return { value: z }
       })
@@ -267,6 +152,7 @@ const Home: BlitzPage = () => {
 
   return (
     <Layout title="Home">
+      <Banner />
       <div className={styles.globe} />
 
       <div className={styles.container}>
@@ -297,13 +183,6 @@ const Home: BlitzPage = () => {
                 />
               </div>
               {JSON.stringify(selected)}
-              <button
-                onClick={() => {
-                  setSpreadsheetData(testObject)
-                }}
-              >
-                Switch to test
-              </button>
             </div>
           </div>
         </main>
@@ -313,3 +192,58 @@ const Home: BlitzPage = () => {
 }
 
 export default Home
+
+const Banner = () => {
+  return (
+    <div className="relative isolate flex items-center gap-x-6 overflow-hidden bg-gray-50 px-6 py-2.5 sm:px-3.5 sm:before:flex-1">
+      <div
+        className="absolute left-[max(-7rem,calc(50%-52rem))] top-1/2 -z-10 -translate-y-1/2 transform-gpu blur-2xl"
+        aria-hidden="true"
+      >
+        <div
+          className="aspect-[577/310] w-[36.0625rem] bg-gradient-to-r from-red-500 to-indigo-900 opacity-30"
+          style={{
+            clipPath:
+              "polygon(74.8% 41.9%, 97.2% 73.2%, 100% 34.9%, 92.5% 0.4%, 87.5% 0%, 75% 28.6%, 58.5% 54.6%, 50.1% 56.8%, 46.9% 44%, 48.3% 17.4%, 24.7% 53.9%, 0% 27.9%, 11.9% 74.2%, 24.9% 54.1%, 68.6% 100%, 74.8% 41.9%)",
+          }}
+        />
+      </div>
+      <div
+        className="absolute left-[max(45rem,calc(50%+8rem))] top-1/2 -z-10 -translate-y-1/2 transform-gpu blur-2xl"
+        aria-hidden="true"
+      >
+        <div
+          className="aspect-[577/310] w-[36.0625rem] bg-gradient-to-r from-red-500 to-indigo-900 opacity-30"
+          style={{
+            clipPath:
+              "polygon(74.8% 41.9%, 97.2% 73.2%, 100% 34.9%, 92.5% 0.4%, 87.5% 0%, 75% 28.6%, 58.5% 54.6%, 50.1% 56.8%, 46.9% 44%, 48.3% 17.4%, 24.7% 53.9%, 0% 27.9%, 11.9% 74.2%, 24.9% 54.1%, 68.6% 100%, 74.8% 41.9%)",
+          }}
+        />
+      </div>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <p className="text-sm leading-6 text-gray-900">
+          <strong className="font-semibold">⚠️1alyze⚠️</strong>
+          <svg
+            viewBox="0 0 2 2"
+            className="mx-2 inline h-0.5 w-0.5 fill-current"
+            aria-hidden="true"
+          >
+            <circle cx={1} cy={1} r={1} />
+          </svg>
+          This page is in highly active development.
+        </p>
+        <a
+          href="#"
+          className="flex-none rounded-full bg-gray-900 px-3.5 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
+        >
+          Get in touch <span aria-hidden="true">&rarr;</span>
+        </a>
+      </div>
+      <div className="flex flex-1 justify-end">
+        <button type="button" className="-m-3 p-3 focus-visible:outline-offset-[-4px]">
+          <span className="sr-only">Dismiss</span>
+        </button>
+      </div>
+    </div>
+  )
+}
