@@ -25,6 +25,7 @@ const UserInfo = ({ setState }) => {
   const currentUser = useCurrentUser()
   const [logoutMutation] = useMutation(logout)
   const [sessionToken] = useQuery(getSessionToken, null)
+  const [processing, setProcessing] = useState(false)
 
   return (
     <>
@@ -56,56 +57,68 @@ const UserInfo = ({ setState }) => {
       )}
 
       <div className="max-w-xl">
-        <label
-          htmlFor="file-upload"
-          className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        >
-          <span>Process screenshot</span>
-          <input
-            id="file-upload"
-            name="file-upload"
-            type="file"
-            className="sr-only"
-            // onInput={async (event) => {
-            //   const base = await getBase64(event.target["files"][0])
+        {processing ? (
+          <button
+            type="button"
+            className="animate-pulse rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            disabled
+          >
+            Processing...
+          </button>
+        ) : (
+          <label
+            htmlFor="file-upload"
+            className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          >
+            <span>Process screenshot</span>
+            <input
+              id="file-upload"
+              name="file-upload"
+              type="file"
+              className="sr-only"
+              // onInput={async (event) => {
+              //   const base = await getBase64(event.target["files"][0])
 
-            //   console.log(base)
-            // }}
-            onChange={async (file) => {
-              if (file.target.files![0]!.size > 1048576 * 2) {
-                alert("File is too big!")
-                file.target.value = ""
-              } else {
-                const base = await getBase64(file.target.files![0])
-                const res = await axios.post(
-                  "https://api.mathpix.com/v3/text",
-                  {
-                    src: base,
-                    formats: ["data"],
-                    data_options: {
-                      include_tsv: true,
+              //   console.log(base)
+              // }}
+              onChange={async (file) => {
+                if (file.target.files![0]!.size > 1048576 * 2) {
+                  alert("File is too big!")
+                  file.target.value = ""
+                } else {
+                  setProcessing(true)
+                  const base = await getBase64(file.target.files![0])
+                  const res = await axios.post(
+                    "https://api.mathpix.com/v3/text",
+                    {
+                      src: base,
+                      formats: ["data"],
+                      data_options: {
+                        include_tsv: true,
+                      },
+                      enable_tables_fallback: true,
                     },
-                    enable_tables_fallback: true,
-                  },
-                  {
-                    headers: {
-                      app_token: sessionToken.app_token,
-                    },
-                  }
-                )
-                const tmp = tsv2json(res.data.data[0]["value"])
-                const final = tmp.map((y) => {
-                  return y.map((z) => {
-                    return { value: z }
+                    {
+                      headers: {
+                        app_token: sessionToken.app_token,
+                      },
+                    }
+                  )
+                  const tmp = tsv2json(res.data.data[0]["value"])
+                  const final = tmp.map((y) => {
+                    return y.map((z) => {
+                      return { value: z }
+                    })
                   })
-                })
-                setState(final)
-                console.log(res)
-              }
-            }}
-            accept="image/png, image/jpeg"
-          />
-        </label>
+                  setState(final)
+                  setProcessing(false)
+                  console.log(res)
+                }
+              }}
+              accept="image/png, image/jpeg"
+            />
+          </label>
+        )}
       </div>
     </>
   )
