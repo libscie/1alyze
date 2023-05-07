@@ -14,6 +14,17 @@
       "contributions": [
         "fundingFinding"
       ]
+    },
+    {
+      "login": "chartgerink",
+      "name": "Chris Hartgerink",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2946344?v=4",
+      "profile": "https://chjh.nl",
+      "contributions": [
+        "code",
+        "maintenance",
+        "design"
+      ]
     }
   ],
   "contributorsPerLine": 7,
