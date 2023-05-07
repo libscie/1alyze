@@ -1,6 +1,6 @@
 [![Blitz.js](https://raw.githubusercontent.com/blitz-js/art/master/github-cover-photo.png)](https://blitzjs.com)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 This is a [Blitz.js](https://github.com/blitz-js/blitz) app.
@@ -186,6 +186,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/jamesheathers"><img src="https://avatars.githubusercontent.com/u/28988332?v=4?s=100" width="100px;" alt="jamesheathers"/><br /><sub><b>jamesheathers</b></sub></a><br /><a href="#fundingFinding-jamesheathers" title="Funding Finding">🔍</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://chjh.nl"><img src="https://avatars.githubusercontent.com/u/2946344?v=4?s=100" width="100px;" alt="Chris Hartgerink"/><br /><sub><b>Chris Hartgerink</b></sub></a><br /><a href="https://github.com/libscie/1alyze/commits?author=chartgerink" title="Code">💻</a> <a href="#maintenance-chartgerink" title="Maintenance">🚧</a> <a href="#design-chartgerink" title="Design">🎨</a></td>
     </tr>
   </tbody>
 </table>
